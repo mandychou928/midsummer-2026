@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>文字骰子</title>
+<style>
+  :root{
+    --bg:#f2f0ef;
+    --ink:#2a2724;
+    --muted:#8a8380;
+    --line:#e4e0dd;
+    --diceA-1:#cfc7e8;
+    --diceA-2:#a89ed0;
+    --diceB-1:#f0e2cd;
+    --diceB-2:#d9c3a2;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{
+    font-family:"PingFang TC","Noto Sans TC","Microsoft JhengHei",system-ui,sans-serif;
+    background:linear-gradient(160deg,#faf9f8,#eeecea);
+    color:var(--ink);
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:32px 16px;
+  }
+  .stage{width:100%;max-width:720px;text-align:center;}
+
+  h1{font-size:26px;font-weight:600;letter-spacing:.04em;}
+  .sub{color:var(--muted);font-size:14px;margin-top:8px;}
+
+  .dice-row{
+    display:flex;justify-content:center;gap:64px;
+    margin:56px 0 44px;flex-wrap:wrap;
+    perspective:1200px;
+  }
+  .slot{width:150px;}
+  .cube{
+    width:150px;height:150px;
+    position:relative;
+    transform-style:preserve-3d;
+    transform:rotateX(-22deg) rotateY(28deg);
+    transition:transform 1.6s cubic-bezier(.2,.9,.25,1);
+    margin:0 auto;
+  }
+  .face{
+    position:absolute;inset:0;
+    display:flex;align-items:center;justify-content:center;
+    font-size:26px;font-weight:600;
+    border-radius:14px;
+    backface-visibility:hidden;
+    padding:8px;text-align:center;line-height:1.2;
+    user-select:none;
+  }
+  .A .face{
+    background:linear-gradient(150deg,var(--diceA-1),var(--diceA-2));
+    color:#3a3352;
+    box-shadow:inset 0 0 30px rgba(255,255,255,.5);
+  }
+  .B .face{
+    background:linear-gradient(150deg,var(--diceB-1),var(--diceB-2));
+    color:#5a4632;
+    box-shadow:inset 0 0 30px rgba(255,255,255,.5);
+  }
+  .f1{transform:translateZ(75px);}
+  .f2{transform:rotateY(90deg) translateZ(75px);}
+  .f3{transform:rotateY(180deg) translateZ(75px);}
+  .f4{transform:rotateY(-90deg) translateZ(75px);}
+  .f5{transform:rotateX(90deg) translateZ(75px);}
+  .f6{transform:rotateX(-90deg) translateZ(75px);}
+
+  .pad{
+    width:150px;height:26px;margin:14px auto 0;
+    border-radius:50%;
+    background:radial-gradient(ellipse at center,rgba(0,0,0,.13),transparent 70%);
+  }
+  .label{margin-top:10px;font-size:13px;color:var(--muted);letter-spacing:.08em;}
+
+  .roll{
+    background:#26221f;color:#fff;border:0;
+    padding:16px 48px;border-radius:999px;
+    font-size:17px;font-weight:600;cursor:pointer;
+    font-family:inherit;
+    box-shadow:0 6px 18px rgba(0,0,0,.18);
+    transition:transform .15s,box-shadow .15s;
+  }
+  .roll:hover{transform:translateY(-2px);box-shadow:0 10px 24px rgba(0,0,0,.22);}
+  .roll:active{transform:translateY(0);}
+  .roll:disabled{opacity:.5;cursor:default;transform:none;}
+  .hint{font-size:12px;color:var(--muted);margin-top:10px;}
+
+  .result{
+    margin:34px auto 0;max-width:520px;
+    background:rgba(255,255,255,.7);
+    border:1px solid var(--line);
+    border-radius:16px;
+    padding:20px;
+  }
+  .result h2{font-size:13px;font-weight:600;color:var(--muted);margin-bottom:14px;letter-spacing:.08em;}
+  .combo{display:flex;align-items:center;gap:14px;justify-content:center;flex-wrap:wrap;}
+  .chip{
+    flex:1;min-width:130px;padding:16px;border-radius:12px;
+    font-size:20px;font-weight:600;
+  }
+  .chip.a{background:var(--diceA-1);color:#3a3352;}
+  .chip.b{background:var(--diceB-1);color:#5a4632;}
+  .plus{color:var(--muted);font-size:20px;}
+
+  @media(prefers-reduced-motion:reduce){
+    .cube{transition:none;}
+  }
+  @media(max-width:520px){
+    .dice-row{gap:32px;margin:40px 0 32px;}
+  }
+</style>
+</head>
+<body>
+
+<main class="stage">
+  <h1>擲出靈感，創造無限可能</h1>
+  <p class="sub">按下按鈕，看看這回合輪到哪個組合</p>
+
+  <div class="dice-row">
+    <div class="slot">
+      <div class="cube A" id="cubeA"></div>
+      <div class="pad"></div>
+      <div class="label">部位</div>
+    </div>
+    <div class="slot">
+      <div class="cube B" id="cubeB"></div>
+      <div class="pad"></div>
+      <div class="label">物品</div>
+    </div>
+  </div>
+
+  <button class="roll" id="rollBtn">🎲 擲出骰子</button>
+  <p class="hint">快捷鍵：Enter 或空白鍵</p>
+
+  <div class="result">
+    <h2>結果</h2>
+    <div class="combo">
+      <div class="chip a" id="outA">—</div>
+      <div class="plus">+</div>
+      <div class="chip b" id="outB">—</div>
+    </div>
+  </div>
+</main>
+
+<script>
+const DICE = {
+  A: ["屁股","手肘","膝蓋","胸口","額頭","肩膀"],
+  B: ["氣球","乒乓球","紙1張","筷子1雙","積木","鞋子"]
+};
+
+let rolling = false;
+
+const FACE_ROT = [
+  {x:0,   y:0},
+  {x:0,   y:-90},
+  {x:0,   y:180},
+  {x:0,   y:90},
+  {x:-90, y:0},
+  {x:90,  y:0}
+];
+
+function buildCube(id, key){
+  const cube = document.getElementById(id);
+  cube.innerHTML = "";
+  DICE[key].forEach((text,i)=>{
+    const d = document.createElement("div");
+    d.className = "face f"+(i+1);
+    d.textContent = text;
+    cube.appendChild(d);
+  });
+}
+
+function spin(id, faceIndex){
+  const cube = document.getElementById(id);
+  const r = FACE_ROT[faceIndex];
+  const extraX = 360*(2+Math.floor(Math.random()*2));
+  const extraY = 360*(2+Math.floor(Math.random()*2));
+  cube.style.transform = `rotateX(${r.x+extraX}deg) rotateY(${r.y+extraY}deg)`;
+}
+
+function roll(){
+  if(rolling) return;
+  rolling = true;
+  const btn = document.getElementById("rollBtn");
+  btn.disabled = true;
+
+  const iA = Math.floor(Math.random()*6);
+  const iB = Math.floor(Math.random()*6);
+
+  spin("cubeA", iA);
+  spin("cubeB", iB);
+
+  setTimeout(()=>{
+    document.getElementById("outA").textContent = DICE.A[iA];
+    document.getElementById("outB").textContent = DICE.B[iB];
+    btn.disabled = false;
+    rolling = false;
+  },1650);
+}
+
+document.getElementById("rollBtn").onclick = roll;
+document.addEventListener("keydown", e=>{
+  if(e.key==="Enter" || e.key===" "){ e.preventDefault(); roll(); }
+});
+
+buildCube("cubeA","A");
+buildCube("cubeB","B");
+</script>
+</body>
+</html>
