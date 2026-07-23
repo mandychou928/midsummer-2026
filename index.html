@@ -43,6 +43,7 @@
     transform-style:preserve-3d;
     transform:rotateX(-22deg) rotateY(28deg);
     transition:transform 1.6s cubic-bezier(.2,.9,.25,1);
+    will-change:transform;
     margin:0 auto;
   }
   .face{
@@ -156,6 +157,12 @@ const DICE = {
 
 let rolling = false;
 
+// 記住每顆骰子目前累積的角度，避免每次從絕對值重算
+const state = {
+  cubeA: {x:-22, y:28},
+  cubeB: {x:-22, y:28}
+};
+
 const FACE_ROT = [
   {x:0,   y:0},
   {x:0,   y:-90},
@@ -174,14 +181,25 @@ function buildCube(id, key){
     d.textContent = text;
     cube.appendChild(d);
   });
+  cube.style.transform = `rotateX(${state[id].x}deg) rotateY(${state[id].y}deg)`;
 }
 
-function spin(id, faceIndex){
+// turnsX / turnsY 由呼叫端傳入，兩顆骰子共用 → 轉速一致
+function spin(id, faceIndex, turnsX, turnsY){
   const cube = document.getElementById(id);
-  const r = FACE_ROT[faceIndex];
-  const extraX = 360*(2+Math.floor(Math.random()*2));
-  const extraY = 360*(2+Math.floor(Math.random()*2));
-  cube.style.transform = `rotateX(${r.x+extraX}deg) rotateY(${r.y+extraY}deg)`;
+  const target = FACE_ROT[faceIndex];
+  const cur = state[id];
+
+  // 在目前角度之上「往前加」到下一個符合目標面的角度
+  let nx = cur.x + turnsX*360;
+  let ny = cur.y + turnsY*360;
+
+  // 校正到目標面：取與 target 同餘 360 的最近較大值
+  nx += ((target.x - nx) % 360 + 360) % 360;
+  ny += ((target.y - ny) % 360 + 360) % 360;
+
+  state[id] = {x:nx, y:ny};
+  cube.style.transform = `rotateX(${nx}deg) rotateY(${ny}deg)`;
 }
 
 function roll(){
@@ -193,8 +211,12 @@ function roll(){
   const iA = Math.floor(Math.random()*6);
   const iB = Math.floor(Math.random()*6);
 
-  spin("cubeA", iA);
-  spin("cubeB", iB);
+  // 兩顆骰子共用圈數 → 同步
+  const turnsX = 2 + Math.floor(Math.random()*2);
+  const turnsY = 2 + Math.floor(Math.random()*2);
+
+  spin("cubeA", iA, turnsX, turnsY);
+  spin("cubeB", iB, turnsX, turnsY);
 
   setTimeout(()=>{
     document.getElementById("outA").textContent = DICE.A[iA];
@@ -205,8 +227,13 @@ function roll(){
 }
 
 document.getElementById("rollBtn").onclick = roll;
+
 document.addEventListener("keydown", e=>{
-  if(e.key==="Enter" || e.key===" "){ e.preventDefault(); roll(); }
+  if(e.key!=="Enter" && e.key!==" ") return;
+  e.preventDefault();
+  // 焦點在按鈕上時，瀏覽器已會觸發 click，不重複呼叫
+  if(document.activeElement === document.getElementById("rollBtn")) return;
+  roll();
 });
 
 buildCube("cubeA","A");
