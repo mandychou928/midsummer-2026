@@ -2,239 +2,718 @@
 <html lang="zh-Hant">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>文字骰子</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>夏・濃 ｜ 四關遊戲規則</title>
 <style>
   :root{
-    --bg:#f2f0ef;
-    --ink:#2a2724;
-    --muted:#8a8380;
-    --line:#e4e0dd;
-    --diceA-1:#cfc7e8;
-    --diceA-2:#a89ed0;
-    --diceB-1:#f0e2cd;
-    --diceB-2:#d9c3a2;
+    --red:#9B2322;
+    --red-deep:#7E231E;
+    --red-soft:#B84A38;
+    --paper:#F5F5F5;
+    --paper-warm:#EFE9E4;
+    --ink:#2A2320;
+    --muted:#8A7F79;
+    --line:#DDD5CF;
+    --sand:#B4988D;
+    --diceA-1:#C4655A;
+    --diceA-2:#9B2322;
+    --diceB-1:#EADFD6;
+    --diceB-2:#C9AE9C;
   }
-  *{box-sizing:border-box;margin:0;padding:0;}
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+  html{scroll-behavior:smooth;}
   body{
     font-family:"PingFang TC","Noto Sans TC","Microsoft JhengHei",system-ui,sans-serif;
-    background:linear-gradient(160deg,#faf9f8,#eeecea);
+    background:var(--paper);
     color:var(--ink);
-    min-height:100vh;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    padding:32px 16px;
+    line-height:1.7;
+    padding-bottom:env(safe-area-inset-bottom);
   }
-  .stage{width:100%;max-width:720px;text-align:center;}
 
-  h1{font-size:26px;font-weight:600;letter-spacing:.04em;}
-  .sub{color:var(--muted);font-size:14px;margin-top:8px;}
-
-  .dice-row{
-    display:flex;justify-content:center;gap:64px;
-    margin:56px 0 44px;flex-wrap:wrap;
-    perspective:1200px;
-  }
-  .slot{width:150px;}
-  .cube{
-    width:150px;height:150px;
+  /* ---------- HERO ---------- */
+  .hero{
+    background:var(--paper);
+    padding:28px 20px 0;
+    text-align:center;
     position:relative;
-    transform-style:preserve-3d;
+    overflow:hidden;
+  }
+  .meta{
+    display:flex;justify-content:space-between;align-items:baseline;
+    font-size:12px;color:var(--red-deep);letter-spacing:.06em;
+    font-weight:600;margin-bottom:22px;
+  }
+  .meta .mid{font-weight:400;opacity:.75;}
+  .title{
+    font-size:clamp(56px,21vw,96px);
+    font-weight:800;
+    color:var(--red-deep);
+    letter-spacing:.06em;
+    line-height:.95;
+    position:relative;
+    z-index:2;
+  }
+  .title .dot{font-size:.5em;vertical-align:.28em;margin:0 .06em;}
+  .hero-band{
+    margin-top:-.28em;
+    height:132px;
+    background:
+      radial-gradient(ellipse 130% 90% at 30% 100%, rgba(240,225,210,.55), transparent 62%),
+      radial-gradient(ellipse 90% 70% at 85% 80%, rgba(214,140,90,.45), transparent 60%),
+      linear-gradient(180deg,var(--red) 0%, var(--red-deep) 100%);
+    position:relative;
+  }
+  .hero-band::after{
+    content:"";position:absolute;inset:0;
+    opacity:.32;mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  .tagline{
+    position:absolute;right:20px;bottom:16px;z-index:2;
+    text-align:right;color:#fff;font-size:12px;line-height:1.5;
+    text-shadow:0 1px 6px rgba(0,0,0,.25);
+  }
+  .tagline em{display:block;font-style:normal;opacity:.8;font-size:11px;margin-top:3px;}
+
+  /* ---------- TABS ---------- */
+  .tabs{
+    position:sticky;top:0;z-index:50;
+    display:flex;background:var(--paper);
+    border-bottom:1px solid var(--line);
+  }
+  .tab{
+    flex:1;padding:15px 8px;border:0;background:none;
+    font-family:inherit;font-size:16.5px;font-weight:600;
+    color:var(--muted);cursor:pointer;position:relative;
+    transition:color .2s;
+  }
+  .tab[aria-selected="true"]{color:var(--red-deep);}
+  .tab[aria-selected="true"]::after{
+    content:"";position:absolute;left:22%;right:22%;bottom:0;
+    height:3px;background:var(--red);border-radius:3px 3px 0 0;
+  }
+
+  .panel{padding:22px 18px 60px;display:none;}
+  .panel.on{display:block;animation:fade .3s ease;}
+  @keyframes fade{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
+
+  /* ---------- OVERVIEW CARD ---------- */
+  .brief{
+    background:var(--paper-warm);
+    border-radius:14px;padding:16px 16px 12px;margin-bottom:24px;
+  }
+  .brief h3{
+    font-size:13px;letter-spacing:.14em;color:var(--red-deep);
+    font-weight:700;margin-bottom:12px;
+  }
+  .stats{display:flex;gap:8px;}
+  .stat{flex:1;text-align:center;}
+  .stat b{display:block;font-size:26px;color:var(--red-deep);font-weight:800;line-height:1.2;}
+  .stat span{font-size:12.5px;color:var(--muted);}
+  .brief p{font-size:14.5px;color:#5C534E;margin-top:12px;padding-top:12px;border-top:1px solid var(--line);}
+
+  /* ---------- ACCORDION ---------- */
+  .folder{
+    border:1px solid var(--line);
+    border-radius:14px;
+    margin-bottom:12px;
+    overflow:hidden;
+    background:#fff;
+    transition:box-shadow .25s,border-color .25s;
+  }
+  .folder.open{
+    border-color:var(--red-soft);
+    box-shadow:0 6px 22px rgba(155,35,34,.10);
+  }
+  .fhead{
+    width:100%;border:0;background:none;font-family:inherit;
+    display:flex;align-items:center;gap:13px;
+    padding:16px 15px;cursor:pointer;text-align:left;
+  }
+  .badge{
+    flex:none;width:38px;height:38px;border-radius:11px;
+    background:var(--paper-warm);
+    display:flex;align-items:center;justify-content:center;
+    font-size:16px;font-weight:800;color:var(--red-deep);
+    transition:background .25s,color .25s;
+  }
+  .folder.open .badge{background:var(--red);color:#fff;}
+  .ftitle{flex:1;min-width:0;}
+  .ftitle b{display:block;font-size:17.5px;font-weight:700;letter-spacing:.02em;}
+  .ftitle span{display:block;font-size:13px;color:var(--muted);margin-top:2px;}
+  .chev{
+    flex:none;width:20px;height:20px;color:var(--sand);
+    transition:transform .3s;
+  }
+  .folder.open .chev{transform:rotate(180deg);color:var(--red);}
+
+  .fbody{
+    max-height:0;overflow:hidden;
+    transition:max-height .4s cubic-bezier(.4,0,.2,1);
+  }
+  .fbody-inner{padding:2px 15px 18px;}
+
+  h4{
+    font-size:13px;letter-spacing:.1em;color:var(--red-deep);
+    font-weight:700;margin:18px 0 8px;
+    padding-bottom:5px;border-bottom:1px solid var(--line);
+  }
+  h4:first-child{margin-top:6px;}
+  ul,ol{padding-left:19px;}
+  li{font-size:15.5px;margin-bottom:7px;}
+  ol li::marker{color:var(--red-soft);font-weight:600;}
+  ul li::marker{color:var(--sand);}
+
+  .warn{
+    background:#FBF0E8;border-left:3px solid var(--red-soft);
+    border-radius:0 8px 8px 0;padding:10px 12px;margin:12px 0;
+    font-size:14.5px;color:#6E3A2C;
+  }
+  .no{color:#9B2322;font-weight:600;}
+
+  .kv{width:100%;border-collapse:collapse;margin:10px 0;font-size:14.5px;}
+  .kv th{
+    background:var(--paper-warm);color:var(--red-deep);
+    padding:9px 11px;text-align:left;font-size:13px;letter-spacing:.05em;
+  }
+  .kv td{padding:10px 11px;border-bottom:1px solid var(--line);}
+  .kv tr:last-child td{border-bottom:0;}
+  .kv td:first-child{color:var(--muted);white-space:nowrap;}
+
+  .quote{
+    background:var(--paper-warm);border-radius:9px;
+    padding:11px 13px;margin:7px 0;font-size:15px;font-weight:600;
+  }
+
+  /* ---------- DICE PANEL ---------- */
+  #dice{padding:0 16px 60px;}
+  .dice-hero{text-align:center;padding:26px 0 4px;}
+  .dh-title{
+    font-size:34px;font-weight:800;color:var(--red-deep);
+    letter-spacing:.08em;line-height:1.15;
+  }
+  .dh-sub{font-size:14.5px;color:var(--muted);margin-top:6px;letter-spacing:.04em;}
+
+  .dice-stage{
+    background:linear-gradient(170deg,#FCFAF8,var(--paper-warm));
+    border:1px solid var(--line);
+    border-radius:20px;
+    padding:30px 16px 26px;
+    margin-top:18px;text-align:center;
+  }
+  .dice-row{
+    display:flex;justify-content:center;
+    gap:clamp(20px,7vw,44px);
+    margin-bottom:34px;perspective:1100px;
+  }
+  .slot{width:clamp(112px,33vw,150px);}
+  .cube{
+    width:clamp(112px,33vw,150px);
+    height:clamp(112px,33vw,150px);
+    position:relative;transform-style:preserve-3d;
     transform:rotateX(-22deg) rotateY(28deg);
     transition:transform 1.6s cubic-bezier(.2,.9,.25,1);
-    will-change:transform;
-    margin:0 auto;
+    will-change:transform;margin:0 auto;
   }
   .face{
-    position:absolute;inset:0;
-    display:flex;align-items:center;justify-content:center;
-    font-size:26px;font-weight:600;
-    border-radius:14px;
-    backface-visibility:hidden;
-    padding:8px;text-align:center;line-height:1.2;
-    user-select:none;
+    position:absolute;inset:0;display:flex;
+    align-items:center;justify-content:center;
+    font-size:clamp(19px,5.4vw,25px);
+    font-weight:700;border-radius:14px;
+    backface-visibility:hidden;padding:6px;
+    text-align:center;line-height:1.15;user-select:none;
   }
   .A .face{
     background:linear-gradient(150deg,var(--diceA-1),var(--diceA-2));
-    color:#3a3352;
-    box-shadow:inset 0 0 30px rgba(255,255,255,.5);
+    color:#fff;box-shadow:inset 0 0 26px rgba(255,255,255,.22);
   }
   .B .face{
     background:linear-gradient(150deg,var(--diceB-1),var(--diceB-2));
-    color:#5a4632;
-    box-shadow:inset 0 0 30px rgba(255,255,255,.5);
+    color:#5A4436;box-shadow:inset 0 0 26px rgba(255,255,255,.5);
   }
-  .f1{transform:translateZ(75px);}
-  .f2{transform:rotateY(90deg) translateZ(75px);}
-  .f3{transform:rotateY(180deg) translateZ(75px);}
-  .f4{transform:rotateY(-90deg) translateZ(75px);}
-  .f5{transform:rotateX(90deg) translateZ(75px);}
-  .f6{transform:rotateX(-90deg) translateZ(75px);}
+  .f1{transform:translateZ(var(--half));}
+  .f2{transform:rotateY(90deg) translateZ(var(--half));}
+  .f3{transform:rotateY(180deg) translateZ(var(--half));}
+  .f4{transform:rotateY(-90deg) translateZ(var(--half));}
+  .f5{transform:rotateX(90deg) translateZ(var(--half));}
+  .f6{transform:rotateX(-90deg) translateZ(var(--half));}
+  .cube{--half:clamp(56px,16.5vw,75px);}
 
   .pad{
-    width:150px;height:26px;margin:14px auto 0;
-    border-radius:50%;
-    background:radial-gradient(ellipse at center,rgba(0,0,0,.13),transparent 70%);
+    width:clamp(112px,33vw,150px);height:22px;
+    margin:14px auto 0;border-radius:50%;
+    background:radial-gradient(ellipse at center,rgba(0,0,0,.15),transparent 70%);
   }
-  .label{margin-top:10px;font-size:13px;color:var(--muted);letter-spacing:.08em;}
+  .dlabel{
+    margin-top:10px;font-size:13px;color:var(--muted);
+    letter-spacing:.16em;font-weight:600;
+  }
 
   .roll{
-    background:#26221f;color:#fff;border:0;
-    padding:16px 48px;border-radius:999px;
-    font-size:17px;font-weight:600;cursor:pointer;
-    font-family:inherit;
-    box-shadow:0 6px 18px rgba(0,0,0,.18);
-    transition:transform .15s,box-shadow .15s;
+    display:inline-flex;align-items:center;gap:10px;
+    background:var(--red-deep);color:#fff;border:0;
+    padding:18px 46px;border-radius:999px;
+    font-size:18px;font-weight:700;font-family:inherit;cursor:pointer;
+    box-shadow:0 8px 22px rgba(126,35,30,.32);
+    transition:transform .15s,box-shadow .15s,opacity .2s;
   }
-  .roll:hover{transform:translateY(-2px);box-shadow:0 10px 24px rgba(0,0,0,.22);}
-  .roll:active{transform:translateY(0);}
-  .roll:disabled{opacity:.5;cursor:default;transform:none;}
-  .hint{font-size:12px;color:var(--muted);margin-top:10px;}
+  .roll-ico{width:21px;height:21px;flex:none;}
+  .roll:active{transform:translateY(2px);box-shadow:0 3px 10px rgba(126,35,30,.3);}
+  .roll:disabled{opacity:.45;}
 
-  .result{
-    margin:34px auto 0;max-width:520px;
-    background:rgba(255,255,255,.7);
-    border:1px solid var(--line);
-    border-radius:16px;
-    padding:20px;
+  .result-card{
+    margin-top:26px;background:#fff;
+    border:1px solid var(--line);border-radius:16px;
+    padding:16px 14px 18px;
   }
-  .result h2{font-size:13px;font-weight:600;color:var(--muted);margin-bottom:14px;letter-spacing:.08em;}
-  .combo{display:flex;align-items:center;gap:14px;justify-content:center;flex-wrap:wrap;}
+  .rc-label{
+    font-size:12px;letter-spacing:.16em;color:var(--sand);
+    font-weight:700;margin-bottom:12px;
+  }
+  .out{display:flex;align-items:center;gap:10px;justify-content:center;}
   .chip{
-    flex:1;min-width:130px;padding:16px;border-radius:12px;
-    font-size:20px;font-weight:600;
+    flex:1;padding:18px 6px;border-radius:12px;
+    font-size:clamp(19px,5.2vw,23px);font-weight:700;
+    transition:transform .3s;
   }
-  .chip.a{background:var(--diceA-1);color:#3a3352;}
-  .chip.b{background:var(--diceB-1);color:#5a4632;}
-  .plus{color:var(--muted);font-size:20px;}
+  .chip.pop{transform:scale(1.05);}
+  .chip.a{background:var(--diceA-2);color:#fff;}
+  .chip.b{background:var(--diceB-1);color:#5A4436;}
+  .plus{color:var(--sand);font-size:19px;font-weight:700;flex:none;}
 
-  @media(prefers-reduced-motion:reduce){
-    .cube{transition:none;}
+  .dice-lists{display:flex;gap:12px;margin-top:22px;}
+  .dl-col{flex:1;}
+  .dl-col h4{margin-top:0;}
+  .dl-ul{list-style:none;padding:0;}
+  .dl-ul li{
+    font-size:14.5px;padding:9px 12px;border-radius:9px;
+    margin-bottom:6px;font-weight:600;
   }
-  @media(max-width:520px){
-    .dice-row{gap:32px;margin:40px 0 32px;}
+  .dl-ul.a li{background:#F6E7E4;color:var(--red-deep);}
+  .dl-ul.b li{background:var(--paper-warm);color:#6B5343;}
+
+  /* 關卡 4 內的導引按鈕 */
+  .goto-dice{
+    width:100%;display:flex;align-items:center;gap:13px;
+    background:var(--paper-warm);border:1px solid var(--line);
+    border-radius:13px;padding:14px 15px;margin-top:8px;
+    font-family:inherit;cursor:pointer;text-align:left;
+    transition:border-color .2s,background .2s;
+  }
+  .goto-dice:active{background:#E9E1DA;border-color:var(--red-soft);}
+  .gd-ico{
+    flex:none;width:40px;height:40px;border-radius:11px;
+    background:var(--red);color:#fff;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .gd-ico svg{width:21px;height:21px;}
+  .gd-txt{flex:1;min-width:0;}
+  .gd-txt b{display:block;font-size:16px;color:var(--ink);}
+  .gd-txt span{display:block;font-size:13px;color:var(--muted);margin-top:1px;}
+  .gd-arrow{flex:none;width:19px;height:19px;color:var(--sand);}
+
+  footer{
+    text-align:center;padding:26px 20px 34px;
+    font-size:12px;color:var(--sand);letter-spacing:.06em;
+  }
+  @media(prefers-reduced-motion:reduce){
+    .cube,.fbody{transition:none;}
+  }
+  @media(min-width:640px){
+    .panel{max-width:600px;margin:0 auto;}
+    .tabs{max-width:600px;margin:0 auto;}
   }
 </style>
 </head>
 <body>
 
-<main class="stage">
-  <h1>擲出靈感，創造無限可能</h1>
-  <p class="sub">按下按鈕，看看這回合輪到哪個組合</p>
-
-  <div class="dice-row">
-    <div class="slot">
-      <div class="cube A" id="cubeA"></div>
-      <div class="pad"></div>
-      <div class="label">部位</div>
+<header class="hero">
+  <div class="meta">
+    <span>大超越愛夫愛妻俱樂部</span>
+    <span class="mid">07.26</span>
+    <span>2026 年度定聚</span>
+  </div>
+  <h1 class="title">夏<span class="dot">·</span>濃</h1>
+  <div class="hero-band">
+    <div class="tagline">
+      盛夏如墨，渲染最深刻的色彩
+      <em>Midsummer bleeds into the deepest hues.</em>
     </div>
-    <div class="slot">
-      <div class="cube B" id="cubeB"></div>
-      <div class="pad"></div>
-      <div class="label">物品</div>
+  </div>
+</header>
+
+<nav class="tabs" role="tablist">
+  <button class="tab" role="tab" aria-selected="true" data-tab="rules">遊戲規則</button>
+  <button class="tab" role="tab" aria-selected="false" data-tab="dice">擲骰</button>
+  <button class="tab" role="tab" aria-selected="false" data-tab="info">活動資訊</button>
+</nav>
+
+<!-- ============ TAB 1 ============ -->
+<section class="panel on" id="rules">
+
+  <div class="brief">
+    <h3>四關闖關・總覽</h3>
+    <div class="stats">
+      <div class="stat"><b>50</b><span>對情侶</span></div>
+      <div class="stat"><b>4</b><span>組輪換</span></div>
+      <div class="stat"><b>120</b><span>分鐘</span></div>
+    </div>
+    <p>四組同時進行，每 30 分鐘輪換一關。每組再分 A、B 兩隊輪流上場，未上場的隊伍負責把關計時。計分以「情侶」為單位。</p>
+  </div>
+
+  <!-- 關卡 1 -->
+  <div class="folder" data-f="1">
+    <button class="fhead">
+      <span class="badge">1</span>
+      <span class="ftitle"><b>你儂我儂</b><span>猜格子 · 比速度</span></span>
+      <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
+    </button>
+    <div class="fbody"><div class="fbody-inner">
+      <h4>道具</h4>
+      <ul><li>16 格板 × 6 套</li><li>計時器 × 6</li><li>紙、筆</li></ul>
+
+      <h4>流程</h4>
+      <ol>
+        <li>伴侶 1 閉眼在紙上指定 4 格，B 隊隊員把關確認</li>
+        <li>伴侶 2 閉眼在紙上指定 4 格，B 隊隊員把關確認</li>
+        <li>開始計時</li>
+        <li>伴侶 1 猜一格 → 伴侶 2 猜一格 → 輪流交替</li>
+        <li><b>猜中</b>：親對方一下，繼續</li>
+        <li><b>猜錯</b>：立即幫對方按摩 20 秒（計時不停）</li>
+        <li>雙方各自的 4 格全數猜中即停錶</li>
+      </ol>
+
+      <div class="warn">按摩時間計入總秒數。亂猜會讓秒數大幅拉長，認真思考才是有利策略。</div>
+
+      <h4>計分</h4>
+      <ul>
+        <li>6 對同時進行，依完成秒數排名</li>
+        <li>隊內排名：6 / 5 / 4 / 3 / 2 / 1 分</li>
+        <li>A、B 隊分開計算，同秒同分</li>
+        <li>若該隊有 7 對，最後兩名同列 1 分</li>
+      </ul>
+    </div></div>
+  </div>
+
+  <!-- 關卡 2 -->
+  <div class="folder" data-f="2">
+    <button class="fhead">
+      <span class="badge">2</span>
+      <span class="ftitle"><b>心心相映</b><span>描述 · 繪畫默契</span></span>
+      <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
+    </button>
+    <div class="fbody"><div class="fbody-inner">
+      <h4>道具</h4>
+      <ul><li>題卡數套（每對情侶 10–12 張）</li><li>畫板或白紙</li><li>筆</li></ul>
+
+      <h4>流程</h4>
+      <ul>
+        <li>一輪 12 分鐘，一隊全體參與</li>
+        <li>每對一組，一人描述、一人繪畫</li>
+        <li>伴侶可臨時換人，但須確認上一張卡牌已講完</li>
+        <li>換隊伍時收回所有題目，關主重新發牌</li>
+      </ul>
+
+      <h4>描述者可以說</h4>
+      <ul><li>幾個字</li><li>形狀</li><li>位置</li><li>顏色 —— <b>第 8 分鐘起</b>才開放</li></ul>
+
+      <h4>描述者不可說</h4>
+      <ul>
+        <li><span class="no">✕</span> 物品功能</li>
+        <li><span class="no">✕</span> 物品類別</li>
+        <li><span class="no">✕</span> 任何直接聯想詞</li>
+      </ul>
+
+      <h4>繪畫者只能說</h4>
+      <div class="quote">「還有其他東西可以畫嗎？」</div>
+      <div class="quote">「是否還有東西可以加上去？」</div>
+      <p style="font-size:14px;color:var(--muted);margin-top:7px;">其餘一律不可發言。</p>
+
+      <h4>計分</h4>
+      <ul><li>答對幾題得幾分</li><li>Pass 次數：每對 3 次</li></ul>
+    </div></div>
+  </div>
+
+  <!-- 關卡 3 -->
+  <div class="folder" data-f="3">
+    <button class="fhead">
+      <span class="badge">3</span>
+      <span class="ftitle"><b>指尖傳愛</b><span>矇眼 · 猜部位</span></span>
+      <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
+    </button>
+    <div class="fbody"><div class="fbody-inner">
+      <h4>道具</h4>
+      <ul><li>眼罩 × 6</li><li>計時器</li></ul>
+
+      <h4>流程</h4>
+      <ol>
+        <li>矇眼者戴上眼罩，原地轉 3 圈（關主須在旁扶穩）</li>
+        <li>引導者帶矇眼者的手觸碰伴侶上半身部位</li>
+        <li>矇眼者說出部位名稱</li>
+        <li>答對繼續下一題，答錯換題</li>
+        <li><b>6 分鐘</b>後角色互換</li>
+        <li><b>12 分鐘</b>一輪，換隊伍</li>
+      </ol>
+
+      <h4>觸碰規則</h4>
+      <ul>
+        <li>只能<b>一指按住</b>，可定點晃動</li>
+        <li><span class="no">✕</span> 不可移動撫摸</li>
+        <li>範圍：肚臍以上</li>
+      </ul>
+
+      <div class="warn">被觸碰者隨時可喊「停」，該題作廢不計分，不需說明理由。關主遇爭議一律以此為準。</div>
+
+      <h4>計分</h4>
+      <ul><li>時間內答對題數＝分數</li><li>兩人份加總</li></ul>
+    </div></div>
+  </div>
+
+  <!-- 關卡 4 -->
+  <div class="folder" data-f="4">
+    <button class="fhead">
+      <span class="badge">4</span>
+      <span class="ftitle"><b>以心傳愛</b><span>擲骰 · 接力傳遞</span></span>
+      <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
+    </button>
+    <div class="fbody"><div class="fbody-inner">
+      <h4>道具</h4>
+      <ul><li>六樣物品各數份</li><li>A 點 / B 點標示</li><li>計時器</li></ul>
+
+      <h4>流程</h4>
+      <ol>
+        <li>同組 A 隊 vs B 隊 PK</li>
+        <li>擲骰決定「部位 ＋ 物品」組合</li>
+        <li>全隊排成一列，用指定部位夾住物品，從 A 點傳到 B 點</li>
+        <li>一組 4 分鐘，計時內傳越多次分數越高</li>
+      </ol>
+
+      <h4>第 2 Round 起</h4>
+      <ul><li>抽到重複部位<b>＋</b>重複物品才須重抽，單一重複不用</li><li>重抽不計入時間</li></ul>
+
+      <h4>特殊狀況</h4>
+      <table class="kv">
+        <tr><td>物品掉落</td><td>回 A 點重新開始</td></tr>
+        <tr><td>換抽</td><td>連續失敗多次，經關主同意可換抽一次</td></tr>
+        <tr><td>計分</td><td>傳遞成功次數＝分數</td></tr>
+      </table>
+
+      <h4>擲骰工具</h4>
+      <button class="goto-dice" data-goto="dice">
+        <span class="gd-ico">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="18" height="18" rx="4"/>
+            <circle cx="8.5" cy="8.5" r="1.3" fill="currentColor" stroke="none"/>
+            <circle cx="15.5" cy="15.5" r="1.3" fill="currentColor" stroke="none"/>
+            <circle cx="8.5" cy="15.5" r="1.3" fill="currentColor" stroke="none"/>
+            <circle cx="15.5" cy="8.5" r="1.3" fill="currentColor" stroke="none"/>
+          </svg>
+        </span>
+        <span class="gd-txt">
+          <b>開啟擲骰工具</b>
+          <span>切換到「擲骰」分頁</span>
+        </span>
+        <svg class="gd-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg>
+      </button>
+    </div></div>
+  </div>
+
+</section>
+
+<!-- ============ TAB · 擲骰 ============ -->
+<section class="panel" id="dice">
+  <div class="dice-hero">
+    <h2 class="dh-title">以心傳愛</h2>
+    <p class="dh-sub">擲出「部位 ＋ 物品」組合</p>
+  </div>
+
+  <div class="dice-stage">
+    <div class="dice-row">
+      <div class="slot">
+        <div class="cube A" id="cubeA"></div>
+        <div class="pad"></div>
+        <div class="dlabel">部位</div>
+      </div>
+      <div class="slot">
+        <div class="cube B" id="cubeB"></div>
+        <div class="pad"></div>
+        <div class="dlabel">物品</div>
+      </div>
+    </div>
+
+    <button class="roll" id="rollBtn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" class="roll-ico">
+        <rect x="3" y="3" width="18" height="18" rx="4"/>
+        <circle cx="8.5" cy="8.5" r="1.4" fill="currentColor" stroke="none"/>
+        <circle cx="15.5" cy="15.5" r="1.4" fill="currentColor" stroke="none"/>
+        <circle cx="12" cy="12" r="1.4" fill="currentColor" stroke="none"/>
+      </svg>
+      擲出骰子
+    </button>
+
+    <div class="result-card" id="resultCard">
+      <div class="rc-label">本回合組合</div>
+      <div class="out">
+        <div class="chip a" id="outA">—</div>
+        <span class="plus">＋</span>
+        <div class="chip b" id="outB">—</div>
+      </div>
     </div>
   </div>
 
-  <button class="roll" id="rollBtn">🎲 擲出骰子</button>
-  <p class="hint">快捷鍵：Enter 或空白鍵</p>
-
-  <div class="result">
-    <h2>結果</h2>
-    <div class="combo">
-      <div class="chip a" id="outA">—</div>
-      <div class="plus">+</div>
-      <div class="chip b" id="outB">—</div>
+  <div class="dice-lists">
+    <div class="dl-col">
+      <h4>骰子 A・部位</h4>
+      <ul class="dl-ul a"><li>屁股</li><li>手肘</li><li>膝蓋</li><li>胸口</li><li>額頭</li><li>肩膀</li></ul>
+    </div>
+    <div class="dl-col">
+      <h4>骰子 B・物品</h4>
+      <ul class="dl-ul b"><li>氣球</li><li>乒乓球</li><li>紙 1 張</li><li>筷子 1 雙</li><li>積木</li><li>鞋子</li></ul>
     </div>
   </div>
-</main>
+
+  <div class="warn">第 2 Round 起，抽到重複部位＋重複物品才須重抽（單一重複不用），重抽不計入時間。</div>
+</section>
+
+<!-- ============ TAB 2 ============ -->
+<section class="panel" id="info">
+  <div class="brief">
+    <h3>分組架構</h3>
+    <p style="border:0;padding:0;margin:0;">50 對情侶分成四組，四組同時在四個關卡進行。每組內部再分 A、B 兩隊，前三關輪流上場，未上場的隊伍負責把關與計時。</p>
+  </div>
+
+  <table class="kv">
+    <tr><th>組別</th><th>對數</th><th>A 隊</th><th>B 隊</th></tr>
+    <tr><td>第一組</td><td>14 對</td><td>7 對</td><td>7 對</td></tr>
+    <tr><td>第二組</td><td>12 對</td><td>6 對</td><td>6 對</td></tr>
+    <tr><td>第三組</td><td>12 對</td><td>6 對</td><td>6 對</td></tr>
+    <tr><td>第四組</td><td>12 對</td><td>6 對</td><td>6 對</td></tr>
+  </table>
+
+  <h4>每關 30 分鐘</h4>
+  <table class="kv">
+    <tr><td>0:00 – 3:00</td><td>關主說明規則、發放道具</td></tr>
+    <tr><td>3:00 – 15:00</td><td>A 隊上場，B 隊把關</td></tr>
+    <tr><td>15:00 – 27:00</td><td>B 隊上場，A 隊把關</td></tr>
+    <tr><td>27:00 – 30:00</td><td>計分、收道具、移動</td></tr>
+  </table>
+
+  <h4>計分方式</h4>
+  <table class="kv">
+    <tr><th>關卡</th><th>計分基準</th></tr>
+    <tr><td>1 你儂我儂</td><td>隊內完成秒數排名（1–6 分）</td></tr>
+    <tr><td>2 心心相映</td><td>答對題數</td></tr>
+    <tr><td>3 指尖傳愛</td><td>答對題數（兩人加總）</td></tr>
+    <tr><td>4 以心傳愛</td><td>傳遞成功次數</td></tr>
+  </table>
+
+  <div class="warn">計分以「情侶」為單位，分隊只是為了分流。關卡 3 作答節奏快，分數自然偏高，為本場重頭戲。</div>
+
+  <h4>關主提醒</h4>
+  <ul>
+    <li>每關結束務必當場登記分數</li>
+    <li>關卡 1 需備妥 6 套道具與 6 位把關人員</li>
+    <li>關卡 2 換隊伍時務必收回全部題卡再重新發牌</li>
+    <li>關卡 3 轉圈時關主須在旁扶穩</li>
+    <li>關卡 4 氣球建議備到 3 倍量</li>
+  </ul>
+</section>
+
+<footer>大超越愛夫愛妻俱樂部 ｜ 2026 年度定聚</footer>
 
 <script>
-const DICE = {
-  A: ["屁股","手肘","膝蓋","胸口","額頭","肩膀"],
-  B: ["氣球","乒乓球","紙1張","筷子1雙","積木","鞋子"]
+/* ---------- TABS ---------- */
+function switchTab(name){
+  document.querySelectorAll(".tab").forEach(x=>
+    x.setAttribute("aria-selected", x.dataset.tab===name ? "true" : "false"));
+  document.querySelectorAll(".panel").forEach(p=>p.classList.remove("on"));
+  document.getElementById(name).classList.add("on");
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+document.querySelectorAll(".tab").forEach(t=>{
+  t.onclick=()=>switchTab(t.dataset.tab);
+});
+// 關卡 4 內的「開啟擲骰工具」按鈕
+document.querySelectorAll("[data-goto]").forEach(b=>{
+  b.onclick=()=>switchTab(b.dataset.goto);
+});
+
+/* ---------- ACCORDION (手風琴：一次只開一關) ---------- */
+document.querySelectorAll(".folder").forEach(f=>{
+  const head=f.querySelector(".fhead");
+  const body=f.querySelector(".fbody");
+  head.onclick=()=>{
+    const isOpen=f.classList.contains("open");
+    document.querySelectorAll(".folder").forEach(o=>{
+      o.classList.remove("open");
+      o.querySelector(".fbody").style.maxHeight=null;
+    });
+    if(!isOpen){
+      f.classList.add("open");
+      body.style.maxHeight=body.scrollHeight+"px";
+      setTimeout(()=>{
+        f.scrollIntoView({behavior:"smooth",block:"start"});
+      },260);
+    }
+  };
+});
+// 展開後內容高度變動（例如擲骰）時重新計算
+const ro=new ResizeObserver(()=>{
+  const open=document.querySelector(".folder.open");
+  if(open){
+    const b=open.querySelector(".fbody");
+    b.style.maxHeight=b.scrollHeight+"px";
+  }
+});
+document.querySelectorAll(".fbody-inner").forEach(el=>ro.observe(el));
+
+/* ---------- DICE ---------- */
+const DICE={
+  A:["屁股","手肘","膝蓋","胸口","額頭","肩膀"],
+  B:["氣球","乒乓球","紙1張","筷子1雙","積木","鞋子"]
 };
+const FACE_ROT=[{x:0,y:0},{x:0,y:-90},{x:0,y:180},{x:0,y:90},{x:-90,y:0},{x:90,y:0}];
+const state={cubeA:{x:-22,y:28},cubeB:{x:-22,y:28}};
+let rolling=false;
 
-let rolling = false;
-
-// 記住每顆骰子目前累積的角度，避免每次從絕對值重算
-const state = {
-  cubeA: {x:-22, y:28},
-  cubeB: {x:-22, y:28}
-};
-
-const FACE_ROT = [
-  {x:0,   y:0},
-  {x:0,   y:-90},
-  {x:0,   y:180},
-  {x:0,   y:90},
-  {x:-90, y:0},
-  {x:90,  y:0}
-];
-
-function buildCube(id, key){
-  const cube = document.getElementById(id);
-  cube.innerHTML = "";
-  DICE[key].forEach((text,i)=>{
-    const d = document.createElement("div");
-    d.className = "face f"+(i+1);
-    d.textContent = text;
-    cube.appendChild(d);
+function buildCube(id,key){
+  const c=document.getElementById(id);
+  c.innerHTML="";
+  DICE[key].forEach((t,i)=>{
+    const d=document.createElement("div");
+    d.className="face f"+(i+1);
+    d.textContent=t;
+    c.appendChild(d);
   });
-  cube.style.transform = `rotateX(${state[id].x}deg) rotateY(${state[id].y}deg)`;
+  c.style.transform=`rotateX(${state[id].x}deg) rotateY(${state[id].y}deg)`;
 }
-
-// turnsX / turnsY 由呼叫端傳入，兩顆骰子共用 → 轉速一致
-function spin(id, faceIndex, turnsX, turnsY){
-  const cube = document.getElementById(id);
-  const target = FACE_ROT[faceIndex];
-  const cur = state[id];
-
-  // 在目前角度之上「往前加」到下一個符合目標面的角度
-  let nx = cur.x + turnsX*360;
-  let ny = cur.y + turnsY*360;
-
-  // 校正到目標面：取與 target 同餘 360 的最近較大值
-  nx += ((target.x - nx) % 360 + 360) % 360;
-  ny += ((target.y - ny) % 360 + 360) % 360;
-
-  state[id] = {x:nx, y:ny};
-  cube.style.transform = `rotateX(${nx}deg) rotateY(${ny}deg)`;
+function spin(id,face,tx,ty){
+  const c=document.getElementById(id), t=FACE_ROT[face], cur=state[id];
+  let nx=cur.x+tx*360, ny=cur.y+ty*360;
+  nx+=((t.x-nx)%360+360)%360;
+  ny+=((t.y-ny)%360+360)%360;
+  state[id]={x:nx,y:ny};
+  c.style.transform=`rotateX(${nx}deg) rotateY(${ny}deg)`;
 }
-
 function roll(){
-  if(rolling) return;
-  rolling = true;
-  const btn = document.getElementById("rollBtn");
-  btn.disabled = true;
-
-  const iA = Math.floor(Math.random()*6);
-  const iB = Math.floor(Math.random()*6);
-
-  // 兩顆骰子共用圈數 → 同步
-  const turnsX = 2 + Math.floor(Math.random()*2);
-  const turnsY = 2 + Math.floor(Math.random()*2);
-
-  spin("cubeA", iA, turnsX, turnsY);
-  spin("cubeB", iB, turnsX, turnsY);
-
+  if(rolling)return;
+  rolling=true;
+  const btn=document.getElementById("rollBtn");
+  btn.disabled=true;
+  const iA=Math.floor(Math.random()*6), iB=Math.floor(Math.random()*6);
+  const tx=2+Math.floor(Math.random()*2), ty=2+Math.floor(Math.random()*2);
+  spin("cubeA",iA,tx,ty);
+  spin("cubeB",iB,tx,ty);
   setTimeout(()=>{
-    document.getElementById("outA").textContent = DICE.A[iA];
-    document.getElementById("outB").textContent = DICE.B[iB];
-    btn.disabled = false;
-    rolling = false;
+    const a=document.getElementById("outA"), b=document.getElementById("outB");
+    a.textContent=DICE.A[iA];
+    b.textContent=DICE.B[iB];
+    a.classList.add("pop"); b.classList.add("pop");
+    setTimeout(()=>{a.classList.remove("pop");b.classList.remove("pop");},320);
+    btn.disabled=false;rolling=false;
   },1650);
 }
-
-document.getElementById("rollBtn").onclick = roll;
-
-document.addEventListener("keydown", e=>{
-  if(e.key!=="Enter" && e.key!==" ") return;
-  e.preventDefault();
-  // 焦點在按鈕上時，瀏覽器已會觸發 click，不重複呼叫
-  if(document.activeElement === document.getElementById("rollBtn")) return;
-  roll();
-});
+document.getElementById("rollBtn").onclick=roll;
 
 buildCube("cubeA","A");
 buildCube("cubeB","B");
